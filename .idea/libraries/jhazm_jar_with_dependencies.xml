@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="jhazm-jar-with-dependencies">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jhazm-jar-with-dependencies.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
