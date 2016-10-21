@@ -1,12 +1,18 @@
 package edu.sharif.ce.gallivanter.core;
 
 import edu.sharif.ce.gallivanter.datatypes.PositionArrayList;
+import jhazm.Normalizer;
+import jhazm.Stemmer;
+import jhazm.tokenizer.WordTokenizer;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardWatchEventKinds.*;
@@ -15,17 +21,54 @@ import static java.nio.file.StandardWatchEventKinds.*;
  * Created by mohammad on 10/21/16.
  */
 public class IndexManager {
+    private Normalizer normalizer=new Normalizer(); //Normalize each raw input line
+    private WordTokenizer tokenizer; //Tokenize each raw input line, after Normalizing
+    private Stemmer stemmer=new Stemmer(); //Stem each word after tokenization
     private Map<String ,Map<String,PositionArrayList>> index;
     private List<String> deletedFileList;
     private List<String> modifiedFileList;
     private FileWatcher fileWatcher;
+    private ArrayList stopWords;
+    private Scanner input;
+    public IndexManager(){
+        try {
+            tokenizer = new WordTokenizer();
+            stopWords=new ArrayList(Files.readAllLines(Paths.get("resources/PersianPoemsData/Stopwords/Stopwords", new String[0]), Charset.forName("UTF8")));
+        }catch (IOException e){
+            throw new RuntimeException("Resources not found at project root",e);
+        }
+    }
     public void initIndex(String directoryPath){
-        //TODO: Index all/...
+        File file=new File(directoryPath);
+        if(!file.exists()||!file.isDirectory())
+            throw new NullPointerException("Nope. not the right path");
+        for(File f:file.listFiles()){
+            addSingleFileToIndex(f);
+        }
         fileWatcher=new FileWatcher(directoryPath);
         fileWatcher.start();
     }
     private void addNewFileToIndex(File file){
 
+    }
+
+    private void addSingleFileToIndex(File file){
+        try {
+            input = new Scanner(file);
+            while (input.hasNext()){
+                String rawInput=input.nextLine();
+                List<String> tokenizedInputs=tokenizer.tokenize(normalizer.run(rawInput));
+                for(String token:tokenizedInputs){
+                    token=stemmer.stem(token);
+                    if(!stopWords.contains(token)){
+                        //TODO: index!
+                    }
+                }
+            }
+        }catch (Exception e){
+            System.out.println("Failed for file: "+file.getPath());
+            e.printStackTrace();
+        }
     }
 
 
