@@ -1,5 +1,6 @@
 package edu.sharif.ce.gallivanter.core;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.sharif.ce.gallivanter.datatypes.PositionArrayList;
 import edu.sharif.ce.gallivanter.datatypes.TermPosition;
 import jhazm.Normalizer;
@@ -34,6 +35,16 @@ public class IndexManager {
             stopWords=new ArrayList(Files.readAllLines(Paths.get("resources/PersianPoemsData/Stopwords/Stopwords", new String[0]), Charset.forName("UTF8")));
         }catch (IOException e){
             throw new RuntimeException("Resources not found at project root",e);
+        }
+    }
+    public boolean writeIndexToFile(String path){
+        try{
+            ObjectMapper objectMapper=new ObjectMapper();
+            objectMapper.writeValue(new File(path),index);
+            return true;
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return false;
         }
     }
     public void initIndex(String directoryPath){
