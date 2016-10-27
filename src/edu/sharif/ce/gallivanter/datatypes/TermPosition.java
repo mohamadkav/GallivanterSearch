@@ -1,9 +1,11 @@
 package edu.sharif.ce.gallivanter.datatypes;
 
+import java.io.Serializable;
+
 /**
  * Created by mohammad on 10/21/16.
  */
-public class TermPosition implements Comparable<TermPosition>{
+public class TermPosition implements Comparable<TermPosition>,Serializable{
     private long line;
     private int position;
 
