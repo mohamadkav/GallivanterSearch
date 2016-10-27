@@ -1,5 +1,6 @@
 package edu.sharif.ce.gallivanter.core;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.sharif.ce.gallivanter.datatypes.FileAndPositionHashmap;
 import edu.sharif.ce.gallivanter.datatypes.PositionArrayList;
 import edu.sharif.ce.gallivanter.datatypes.TermPosition;
@@ -66,7 +67,16 @@ public class IndexManager {
         return toReturn;
     }
 
-
+    public boolean writeIndexToFile(String path) {
+        try{
+            ObjectMapper objectMapper=new ObjectMapper();
+            objectMapper.writeValue(new File(path),index);
+            return true;
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return false;
+        }
+    }
 
     private void addSingleFileToIndex(File file, long version,boolean override){
         try {
