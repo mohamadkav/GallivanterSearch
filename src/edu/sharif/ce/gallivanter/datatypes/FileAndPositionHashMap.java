@@ -5,7 +5,7 @@ import java.util.HashMap;
 /**
  * Created by mohammad on 10/27/16.
  */
-public class FileAndPositionHashmap extends HashMap<String,PositionArrayList>{
+public class FileAndPositionHashMap extends HashMap<String,PositionArrayList>{
     @Override
     public String toString() {
         StringBuilder stringBuilder=new StringBuilder("");

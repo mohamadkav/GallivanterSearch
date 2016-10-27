@@ -1,7 +1,7 @@
 package edu.sharif.ce.gallivanter.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.sharif.ce.gallivanter.datatypes.FileAndPositionHashmap;
+import edu.sharif.ce.gallivanter.datatypes.FileAndPositionHashMap;
 import edu.sharif.ce.gallivanter.datatypes.PositionArrayList;
 import edu.sharif.ce.gallivanter.datatypes.TermPosition;
 import jhazm.Normalizer;
@@ -27,7 +27,7 @@ public class IndexManager {
 
 
 
-    private HashMap<String ,FileAndPositionHashmap> index=new HashMap<>();
+    private HashMap<String ,FileAndPositionHashMap> index=new HashMap<>();
     private SecondLevelIndex secondLevelIndex=new SecondLevelIndex();
     private List<String> deletedFileList=new ArrayList<>();
     private List<String> modifiedFileList=new ArrayList<>();
@@ -54,9 +54,9 @@ public class IndexManager {
         fileWatcher.start();
     }
 
-    public FileAndPositionHashmap fetch(String token){
-        FileAndPositionHashmap newlyFetched=index.get(token);
-        FileAndPositionHashmap toReturn=new FileAndPositionHashmap();
+    public FileAndPositionHashMap fetch(String token){
+        FileAndPositionHashMap newlyFetched=index.get(token);
+        FileAndPositionHashMap toReturn=new FileAndPositionHashMap();
         if(newlyFetched!=null)
             for (String fileIdentifier : newlyFetched.keySet()) {
                 PositionArrayList positionArrayList = newlyFetched.get(fileIdentifier);
@@ -100,7 +100,7 @@ public class IndexManager {
                     token=stemmer.stem(token);
                     if(!stopWords.contains(token)&&token.length()>1){
                         if(!index.containsKey(token)){
-                            index.put(token,new FileAndPositionHashmap(){{put(file.getAbsolutePath(),new PositionArrayList(version));}});
+                            index.put(token,new FileAndPositionHashMap(){{put(file.getAbsolutePath(),new PositionArrayList(version));}});
                             index.get(token).get(file.getAbsolutePath()).add(new TermPosition(currentLine,i));
                         }
                         else{

@@ -16,7 +16,7 @@ import java.util.Scanner;
 public class Test {
     public static void main(String[] args) throws Exception{
         IndexManager indexManager=new IndexManager();
-        indexManager.initIndex("/Users/mohammad/IdeaProjects/MIR/resources/PersianPoemsData/Poems");
-        indexManager.writeIndexToFile("/Users/mohammad/Desktop/shit2.index");
+        indexManager.initIndex("/home/mohammad/IdeaProjects/MIR/resources/PersianPoemsData/Poems");
+        indexManager.writeIndexToFile("/home/mohammad/Desktop/shit2.index");
     }
 }
