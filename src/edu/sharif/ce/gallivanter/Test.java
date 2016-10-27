@@ -13,6 +13,11 @@ import java.util.Scanner;
 public class Test {
     public static void main(String[] args) throws Exception{
         IndexManager indexManager=new IndexManager();
-        indexManager.initIndex("/home/mohammad/IdeaProjects/MIR/resources/PersianPoemsData/Poems");
+        indexManager.initIndex("/home/mohammad/IdeaProjects/MIR/resources/PersianPoemsData/testPoems");
+        Scanner input=new Scanner(System.in);
+        while(input.hasNext()){
+            String string=input.nextLine();
+            System.out.println(indexManager.fetch(string));
+        }
     }
 }

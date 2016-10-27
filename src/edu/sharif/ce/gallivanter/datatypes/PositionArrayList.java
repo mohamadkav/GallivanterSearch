@@ -19,4 +19,7 @@ public class PositionArrayList extends ArrayList<TermPosition>{
         }
         return false;
     }
+    public long getVersion(){
+        return version;
+    }
 }

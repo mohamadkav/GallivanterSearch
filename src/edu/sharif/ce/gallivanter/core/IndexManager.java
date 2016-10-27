@@ -1,5 +1,6 @@
 package edu.sharif.ce.gallivanter.core;
 
+import edu.sharif.ce.gallivanter.datatypes.FileAndPositionHashmap;
 import edu.sharif.ce.gallivanter.datatypes.PositionArrayList;
 import edu.sharif.ce.gallivanter.datatypes.TermPosition;
 import jhazm.Normalizer;
@@ -19,12 +20,16 @@ import static java.nio.file.StandardWatchEventKinds.*;
  * Created by mohammad on 10/21/16.
  */
 public class IndexManager {
-    private Normalizer normalizer=new Normalizer(); //Normalize each raw input line
-    private WordTokenizer tokenizer; //Tokenize each raw input line, after Normalizing
-    private Stemmer stemmer=new Stemmer(); //Stem each word after tokenization
-    private HashMap<String ,HashMap<String,PositionArrayList>> index=new HashMap<>();
-    private List<String> deletedFileList;
-    private List<String> modifiedFileList;
+    private final Normalizer normalizer=new Normalizer(); //Normalize each raw input line
+    private final WordTokenizer tokenizer; //Tokenize each raw input line, after Normalizing
+    private final Stemmer stemmer=new Stemmer(); //Stem each word after tokenization
+
+
+
+    private HashMap<String ,FileAndPositionHashmap> index=new HashMap<>();
+    private SecondLevelIndex secondLevelIndex=new SecondLevelIndex();
+    private List<String> deletedFileList=new ArrayList<>();
+    private List<String> modifiedFileList=new ArrayList<>();
     private FileWatcher fileWatcher;
     private ArrayList stopWords;
     private Scanner input;
@@ -41,14 +46,29 @@ public class IndexManager {
         if(!file.exists()||!file.isDirectory())
             throw new NullPointerException("Nope. not the right path");
         for(File f:file.listFiles()){
-            addSingleFileToIndex(f);
+            addSingleFileToIndex(f,1,false);
         }
         System.out.println("Index init Finished Successfully!");
         fileWatcher=new FileWatcher(directoryPath);
         fileWatcher.start();
     }
 
-    private void addSingleFileToIndex(File file){
+    public FileAndPositionHashmap fetch(String token){
+        FileAndPositionHashmap newlyFetched=index.get(token);
+        FileAndPositionHashmap toReturn=new FileAndPositionHashmap();
+        if(newlyFetched!=null)
+            for (String fileIdentifier : newlyFetched.keySet()) {
+                PositionArrayList positionArrayList = newlyFetched.get(fileIdentifier);
+                if (!deletedFileList.contains(fileIdentifier) && secondLevelIndex.getLatestVersionForFile(fileIdentifier) == positionArrayList.getVersion())
+                    toReturn.put(fileIdentifier, positionArrayList);
+            }
+
+        return toReturn;
+    }
+
+
+
+    private void addSingleFileToIndex(File file, long version,boolean override){
         try {
             input = new Scanner(file);
             long currentLine=0;
@@ -57,19 +77,27 @@ public class IndexManager {
                 currentLine++;
                 String normalized=normalizer.run(rawInput);
                 List<String> tokenizedInputs=tokenizer.tokenize(normalized);
+                if(override)
+                    for(String token:tokenizedInputs) {
+                        token=stemmer.stem(token);
+                        if(!stopWords.contains(token)&&token.length()>1)
+                            if (index.get(token) != null)
+                                if (index.get(token).get(file.getAbsolutePath()) != null)
+                                    index.get(token).remove(file.getAbsolutePath());
+                    }
                 for(int i=0;i<tokenizedInputs.size();i++){
                     String token=tokenizedInputs.get(i);
                     token=stemmer.stem(token);
                     if(!stopWords.contains(token)&&token.length()>1){
                         if(!index.containsKey(token)){
-                            index.put(token,new HashMap<String,PositionArrayList>(){{put(file.getAbsolutePath(),new PositionArrayList(1));}});
+                            index.put(token,new FileAndPositionHashmap(){{put(file.getAbsolutePath(),new PositionArrayList(version));}});
                             index.get(token).get(file.getAbsolutePath()).add(new TermPosition(currentLine,i));
                         }
                         else{
                             if(index.get(token).get(file.getAbsolutePath())!=null)
                                 index.get(token).get(file.getAbsolutePath()).add(new TermPosition(currentLine,i));
                             else {
-                                index.get(token).put(file.getAbsolutePath(), new PositionArrayList(1));
+                                index.get(token).put(file.getAbsolutePath(), new PositionArrayList(version));
                                 index.get(token).get(file.getAbsolutePath()).add(new TermPosition(currentLine,i));
                             }
                         }
@@ -125,19 +153,21 @@ public class IndexManager {
                             continue; //loop
                         } else if (ENTRY_CREATE == kind) {
                             // A new Path was created
-                            Path dir=(Path)key.watchable();
+/*                            Path dir=(Path)key.watchable();
                             Path newPath = dir.resolve(((WatchEvent<Path>) watchEvent).context());
                             // Output
                             System.out.println("New path created: " + newPath);
                             File newFile=newPath.toFile();
                             if(newFile.isDirectory())
-                               addFolderToIndex(newFile.listFiles());
+                                addFolderToModify(newFile);
                             else
-                                addSingleFileToIndex(newFile);
+                                addSingleFileToIndex(newFile,1,false);*/
                         }else if(ENTRY_DELETE==kind){
                             Path dir=(Path)key.watchable();
                             Path deletedPath = dir.resolve(((WatchEvent<Path>) watchEvent).context());
                             // Output
+                            if(!isValidPath(deletedPath.toFile().getAbsolutePath()))
+                                continue;
                             System.out.println("Path deleted: " + deletedPath);
                             File deletedFile=deletedPath.toFile();
                             if(deletedFile.isDirectory())
@@ -147,13 +177,12 @@ public class IndexManager {
                         }else if(ENTRY_MODIFY==kind){
                             Path dir=(Path)key.watchable();
                             Path modifiedPath = dir.resolve(((WatchEvent<Path>) watchEvent).context());
+                            if(!isValidPath(modifiedPath.toFile().getAbsolutePath()))
+                                continue;
                             // Output
                             System.out.println("Path modified: " + modifiedPath);
                             File modifiedFile=modifiedPath.toFile();
-                            if(modifiedFile.isDirectory())
-                                addFolderToModify(modifiedFile.listFiles());
-                            else
-                                modifiedFileList.add(modifiedFile.getAbsolutePath());
+                            addFolderToModify(modifiedFile);
                         }
                     }
 
@@ -168,15 +197,6 @@ public class IndexManager {
                 ie.printStackTrace();
             }
         }
-        private void addFolderToIndex(File[] files) {
-            for (File file : files) {
-                if (file.isDirectory())
-                    addFolderToIndex(file.listFiles()); // Calls same method again.
-                else
-                    addSingleFileToIndex(file);
-
-            }
-        }
         private void addFolderToDelete(File[] files) {
             for (File file : files) {
                 if (file.isDirectory())
@@ -185,13 +205,26 @@ public class IndexManager {
                     deletedFileList.add(file.getAbsolutePath());
             }
         }
-        private void addFolderToModify(File[] files) {
-            for (File file : files) {
-                if (file.isDirectory())
-                    addFolderToModify(file.listFiles());
-                else
-                    modifiedFileList.add(file.getAbsolutePath());
+        private void addFolderToModify(File file) {
+            if (file.isDirectory()) {
+                for (File subFiles : file.listFiles())
+                    addFolderToModify(subFiles);
             }
+            else {
+                modifiedFileList.add(file.getAbsolutePath());
+                secondLevelIndex.notifyVersionUpdateForFile(file.getAbsolutePath());
+                addSingleFileToIndex(file,secondLevelIndex.getLatestVersionForFile(file.getAbsolutePath()),true);
+                if(deletedFileList.contains(file.getAbsolutePath()))
+                    deletedFileList.remove(file.getAbsolutePath());
+            }
+        }
+        private boolean isValidPath(String path){
+   //         System.out.println("Path: "+path);
+            if(path.substring(path.lastIndexOf("/")+1).startsWith("."))
+                return false;
+            if(!path.endsWith("poem"))
+                return false;
+            return true;
         }
     }
 }
