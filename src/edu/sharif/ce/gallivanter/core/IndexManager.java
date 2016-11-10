@@ -28,6 +28,7 @@ public class IndexManager {
 
 
     private HashMap<String ,FileAndPositionHashMap> index=new HashMap<>();
+    private BigramIndex bigramIndex=new BigramIndex();
     private SecondLevelIndex secondLevelIndex=new SecondLevelIndex();
     private List<String> deletedFileList=new ArrayList<>();
     private List<String> modifiedFileList=new ArrayList<>();
@@ -67,6 +68,23 @@ public class IndexManager {
         return toReturn;
     }
 
+    public HashMap<String,FileAndPositionHashMap> fetchByBigram(String biword){
+        List<String>wordsToGet=new ArrayList<>();
+        HashMap<String,FileAndPositionHashMap>toReturn=new HashMap<>();
+        if(!bigramIndex.containsKey(biword))
+            return toReturn;
+        for(String word:bigramIndex.get(biword)){
+            if(!wordsToGet.contains(word))
+                wordsToGet.add(word);
+        }
+        for(String word:wordsToGet){
+            FileAndPositionHashMap fetched=fetch(word);
+            if(fetched!=null&&!fetched.isEmpty())
+                toReturn.put(word,fetched);
+        }
+        return toReturn;
+    }
+
     public boolean writeIndexToFile(String path) {
         try{
             ObjectMapper objectMapper=new ObjectMapper();
@@ -101,6 +119,7 @@ public class IndexManager {
                     if(!stopWords.contains(token)&&token.length()>1){
                         if(!index.containsKey(token)){
                             index.put(token,new FileAndPositionHashMap(){{put(file.getAbsolutePath(),new PositionArrayList(version));}});
+                            addToBigram(token);
                             index.get(token).get(file.getAbsolutePath()).add(new TermPosition(currentLine,i));
                         }
                         else{
@@ -117,6 +136,18 @@ public class IndexManager {
         }catch (Exception e){
             System.out.println("Failed for file: "+file.getAbsolutePath());
             e.printStackTrace();
+        }
+    }
+
+    private void addToBigram(String token) {
+        for(int i=0;i<token.length()-1;i++){
+            String bi=token.substring(i,i+2);
+            if(bi.length()!=2)
+                throw new RuntimeException("Bigram Length is not equal to 2");
+            if(!bigramIndex.containsKey(bi))
+                bigramIndex.put(bi,new ArrayList<>());
+            if(!bigramIndex.get(bi).contains(token))
+                bigramIndex.get(bi).add(token);
         }
     }
 
