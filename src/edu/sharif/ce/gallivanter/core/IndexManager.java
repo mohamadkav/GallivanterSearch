@@ -31,11 +31,11 @@ public class IndexManager {
     private BigramIndex bigramIndex=new BigramIndex();
     private SecondLevelIndex secondLevelIndex=new SecondLevelIndex();
     private List<String> deletedFileList=new ArrayList<>();
-    private List<String> modifiedFileList=new ArrayList<>();
     private FileWatcher fileWatcher;
     private ArrayList stopWords;
-    private Scanner input;
-    public IndexManager(){
+    private boolean watchFolder;
+    public IndexManager(boolean watchFolder){
+        this.watchFolder=watchFolder;
         try {
             tokenizer = new WordTokenizer();
             stopWords=new ArrayList(Files.readAllLines(Paths.get("resources/PersianPoemsData/Stopwords/Stopwords", new String[0]), Charset.forName("UTF8")));
@@ -51,8 +51,10 @@ public class IndexManager {
             addSingleFileToIndex(f,1,false);
         }
         System.out.println("Index init Finished Successfully!");
-        fileWatcher=new FileWatcher(directoryPath);
-        fileWatcher.start();
+        if(watchFolder) {
+            fileWatcher = new FileWatcher(directoryPath);
+            fileWatcher.start();
+        }
     }
 
     public FileAndPositionHashMap fetch(String token){
@@ -98,7 +100,7 @@ public class IndexManager {
 
     private void addSingleFileToIndex(File file, long version,boolean override){
         try {
-            input = new Scanner(file);
+            Scanner input = new Scanner(file);
             long currentLine=0;
             while (input.hasNext()){
                 String rawInput=input.nextLine();
@@ -252,7 +254,6 @@ public class IndexManager {
                     addFolderToModify(subFiles);
             }
             else {
-                modifiedFileList.add(file.getAbsolutePath());
                 secondLevelIndex.notifyVersionUpdateForFile(file.getAbsolutePath());
                 addSingleFileToIndex(file,secondLevelIndex.getLatestVersionForFile(file.getAbsolutePath()),true);
                 if(deletedFileList.contains(file.getAbsolutePath()))
@@ -260,9 +261,9 @@ public class IndexManager {
             }
         }
         private boolean isValidPath(String path){
-   //         System.out.println("Path: "+path);
             if(path.substring(path.lastIndexOf("/")+1).startsWith("."))
                 return false;
+            //TODO: Absolution only for these types of file
             if(!path.endsWith("poem"))
                 return false;
             return true;
