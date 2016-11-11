@@ -83,4 +83,14 @@ public class MathUtils {
 
         return dp[len1][len2];
     }
+
+    public static double calculateLogTfForDoc(int numberOFTimesWhichTermOccursInDoc){
+        if(!(numberOFTimesWhichTermOccursInDoc>0))
+            return 0;
+        return 1+Math.log(numberOFTimesWhichTermOccursInDoc);
+    }
+
+    public static double calculateIdfForTerm(int N,int numberOfDocsWhichContainTerm){
+        return Math.log(N/numberOfDocsWhichContainTerm);
+    }
 }

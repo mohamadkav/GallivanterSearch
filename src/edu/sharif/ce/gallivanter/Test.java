@@ -19,8 +19,8 @@ import java.util.Scanner;
  */
 public class Test {
     public static void main(String[] args) throws Exception{
-        QueryManager queryManager=new QueryManager("/home/mohammad/IdeaProjects/MIR/resources/PersianPoemsData/testPoems",false);
-        System.out.println(queryManager.correctQuery("تفاجر"));
+        QueryManager queryManager=new QueryManager("/home/mohammad/IdeaProjects/MIR/resources/PersianPoemsData/Poems",false);
+        System.out.println(queryManager.fetch("روز",true));
   //      indexManager.writeIndexToFile("/home/mohammad/Desktop/shit2.index");
 /*        HashMap<String,FileAndPositionHashMap> mylist=indexManager.fetchByBigram("خر");
         for (String s : mylist.keySet()) {

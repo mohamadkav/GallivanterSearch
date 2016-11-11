@@ -30,10 +30,17 @@ public class IndexManager {
     private HashMap<String ,FileAndPositionHashMap> index=new HashMap<>();
     private BigramIndex bigramIndex=new BigramIndex();
     private SecondLevelIndex secondLevelIndex=new SecondLevelIndex();
-    private List<String> deletedFileList=new ArrayList<>();
+    private List<String> deletedFileList=new ArrayList<String>(){
+        @Override
+        public boolean add(String o) {
+            N--;
+            return super.add(o);
+        }
+    };
     private FileWatcher fileWatcher;
     private ArrayList stopWords;
     private boolean watchFolder;
+    private Integer N=0;
     public IndexManager(boolean watchFolder){
         this.watchFolder=watchFolder;
         try {
@@ -56,7 +63,16 @@ public class IndexManager {
             fileWatcher.start();
         }
     }
-
+    @Deprecated
+    public HashMap<String ,FileAndPositionHashMap> getIndex(){
+        return index;
+    }
+    public Integer getNumberOfDocs(){
+        return N;
+    }
+    public Integer getSizeOfDocsForTerm(String term){
+        return index.get(term).keySet().size();
+    }
     public FileAndPositionHashMap fetch(String token){
         FileAndPositionHashMap newlyFetched=index.get(token);
         FileAndPositionHashMap toReturn=new FileAndPositionHashMap();
@@ -115,6 +131,8 @@ public class IndexManager {
                                 if (index.get(token).get(file.getAbsolutePath()) != null)
                                     index.get(token).remove(file.getAbsolutePath());
                     }
+                else
+                    N++;
                 for(int i=0;i<tokenizedInputs.size();i++){
                     String token=tokenizedInputs.get(i);
                     token=stemmer.stem(token);
@@ -196,10 +214,12 @@ public class IndexManager {
                             continue; //loop
                         } else if (ENTRY_CREATE == kind) {
                             // A new Path was created
-/*                            Path dir=(Path)key.watchable();
+                            Path dir=(Path)key.watchable();
                             Path newPath = dir.resolve(((WatchEvent<Path>) watchEvent).context());
+                            if(isValidPath(newPath.toFile().getAbsolutePath()))
+                                N++;
                             // Output
-                            System.out.println("New path created: " + newPath);
+/*                            System.out.println("New path created: " + newPath);
                             File newFile=newPath.toFile();
                             if(newFile.isDirectory())
                                 addFolderToModify(newFile);

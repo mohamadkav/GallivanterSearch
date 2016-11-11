@@ -1,11 +1,11 @@
 package edu.sharif.ce.gallivanter.datatypes;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * Created by mohammad on 10/27/16.
  */
-public class FileAndPositionHashMap extends HashMap<String,PositionArrayList>{
+public class FileAndPositionHashMap extends LinkedHashMap<String,PositionArrayList> {
     @Override
     public String toString() {
         StringBuilder stringBuilder=new StringBuilder("");
@@ -15,6 +15,7 @@ public class FileAndPositionHashMap extends HashMap<String,PositionArrayList>{
             for(TermPosition termPosition:positionArrayList){
                 stringBuilder.append(" | "+termPosition.getLine()+","+termPosition.getPosition());
             }
+            stringBuilder.append("\n");
         }
         return stringBuilder.toString();
     }
