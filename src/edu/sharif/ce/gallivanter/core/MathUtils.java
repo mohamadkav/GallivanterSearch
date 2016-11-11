@@ -91,6 +91,10 @@ public class MathUtils {
     }
 
     public static double calculateIdfForTerm(int N,int numberOfDocsWhichContainTerm){
-        return Math.log(N/numberOfDocsWhichContainTerm);
+        try {
+            return Math.log(N / numberOfDocsWhichContainTerm);
+        }catch (ArithmeticException e){
+            return 0;
+        }
     }
 }

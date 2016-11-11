@@ -2,14 +2,13 @@ package edu.sharif.ce.gallivanter.core;
 
 import edu.sharif.ce.gallivanter.datatypes.DocScore;
 import edu.sharif.ce.gallivanter.datatypes.FileAndPositionHashMap;
-import edu.sharif.ce.gallivanter.datatypes.TermPosition;
+
 import jhazm.Normalizer;
 import jhazm.Stemmer;
 import jhazm.tokenizer.WordTokenizer;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by mohammad on 11/10/16.
@@ -35,8 +34,10 @@ public class QueryManager {
         List<String> tokenizedQuery=tokenizer.tokenize(query);
         String correctQuery="";
         for(String queryTerm:tokenizedQuery){
-            queryTerm=stemmer.stem(query);
-            if(!indexManager.fetch(queryTerm).isEmpty()||queryTerm.length()<3){ //Query for less than 3 chars is ignored being corrected. because I haven't indexed it...
+            queryTerm=stemmer.stem(queryTerm);
+            if(queryTerm.length()<3||indexManager.isStopWord(queryTerm))
+                continue;
+            if(!indexManager.fetch(queryTerm).isEmpty()){ //Query for less than 2 chars is ignored being corrected. because I haven't indexed it...
                 correctQuery+=queryTerm+" ";
                 continue;
             }

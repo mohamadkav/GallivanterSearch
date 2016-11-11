@@ -20,7 +20,7 @@ import java.util.Scanner;
 public class Test {
     public static void main(String[] args) throws Exception{
         QueryManager queryManager=new QueryManager("/home/mohammad/IdeaProjects/MIR/resources/PersianPoemsData/Poems",false);
-        System.out.println(queryManager.fetch("روز",true));
+        System.out.println(queryManager.fetch("بردن پادشاه آن طبیب را بر بیمار تا حال او را ببیند خلوت طلبیدن آن ولی از پادشاه جهت دریافتن رنج کنیزک بردن پادشاه آن طبیب را بر بیمار تا حال او را ببیند ملاقات پادشاه با آن ولی که در خوابش نمودند ظاهر شدن عجز حکیمان از معالجهٔ کنیزک و روی آوردن پادشاه به درگاه اله و در خواب دیدن او ولیی راعاشق شدن پادشاه بر کنیزک رنجور و تدبیر کردن در صحت او",true));
   //      indexManager.writeIndexToFile("/home/mohammad/Desktop/shit2.index");
 /*        HashMap<String,FileAndPositionHashMap> mylist=indexManager.fetchByBigram("خر");
         for (String s : mylist.keySet()) {

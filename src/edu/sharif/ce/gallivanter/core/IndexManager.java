@@ -71,7 +71,11 @@ public class IndexManager {
         return N;
     }
     public Integer getSizeOfDocsForTerm(String term){
-        return index.get(term).keySet().size();
+        try {
+            return index.get(term).keySet().size();
+        }catch (NullPointerException e){
+            return 0;
+        }
     }
     public FileAndPositionHashMap fetch(String token){
         FileAndPositionHashMap newlyFetched=index.get(token);
@@ -112,6 +116,10 @@ public class IndexManager {
             ex.printStackTrace();
             return false;
         }
+    }
+
+    public boolean isStopWord(String word){
+        return stopWords.contains(word);
     }
 
     private void addSingleFileToIndex(File file, long version,boolean override){
