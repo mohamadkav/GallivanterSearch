@@ -1,5 +1,6 @@
 package edu.sharif.ce.gallivanter.core;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.sharif.ce.gallivanter.datatypes.DocScore;
 import edu.sharif.ce.gallivanter.datatypes.FileAndPositionHashMap;
 
@@ -7,6 +8,7 @@ import jhazm.Normalizer;
 import jhazm.Stemmer;
 import jhazm.tokenizer.WordTokenizer;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -62,6 +64,28 @@ public class QueryManager {
         }
         return correctQuery.substring(0,correctQuery.length()-1);
     }
+
+    public boolean writeIndexToFile(String path) {
+        try{
+            ObjectMapper objectMapper=new ObjectMapper();
+            objectMapper.writeValue(new File(path),indexManager);
+            return true;
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean readIndexFromFile(String path) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            indexManager = mapper.readValue(new File(path), IndexManager.class);
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+    }
+
     public FileAndPositionHashMap fetch(String query,boolean lnnDocLtnQuery){
         FileAndPositionHashMap map=new FileAndPositionHashMap();
         query=correctQuery(query);

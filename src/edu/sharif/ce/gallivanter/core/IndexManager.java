@@ -1,6 +1,5 @@
 package edu.sharif.ce.gallivanter.core;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.sharif.ce.gallivanter.datatypes.FileAndPositionHashMap;
 import edu.sharif.ce.gallivanter.datatypes.PositionArrayList;
 import edu.sharif.ce.gallivanter.datatypes.TermPosition;
@@ -105,17 +104,6 @@ public class IndexManager {
                 toReturn.put(word,fetched);
         }
         return toReturn;
-    }
-
-    public boolean writeIndexToFile(String path) {
-        try{
-            ObjectMapper objectMapper=new ObjectMapper();
-            objectMapper.writeValue(new File(path),index);
-            return true;
-        }catch(Exception ex){
-            ex.printStackTrace();
-            return false;
-        }
     }
 
     public boolean isStopWord(String word){
